@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Versets en diapositives</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PptxGenJS/3.12.0/pptxgen.bundle.js"></script>
+<style>
+:root{--bg:#f6f4ef;--fg:#1e1e24;--card:#fff;--bd:#d9d5ca;--ac:#7a4fd6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17171c;--fg:#f0eee8;--card:#23232b;--bd:#3a3a45;--ac:#a58bf0}}
+:root[data-theme="dark"]{--bg:#17171c;--fg:#f0eee8;--card:#23232b;--bd:#3a3a45;--ac:#a58bf0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,sans-serif;padding:14px;max-width:760px;margin-inline:auto}
+h1{font-size:20px;margin:0 0 10px}
+.slide{container-type:inline-size;aspect-ratio:16/9;border-radius:12px;display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;text-align:left;padding:8cqw 7cqw;color:#fff;font-family:"Times New Roman",Times,serif;position:relative;overflow:hidden}
+.slide .rb{flex:none;display:flex;align-items:center;gap:4cqw;width:67cqw;border:.4cqw solid #c0449a;background:rgba(30,40,125,.55);padding:1.6cqw 2cqw 1.6cqw 2cqw;font-weight:bold;font-size:4.2cqw}
+.slide .dot{width:6.8cqw;height:6.8cqw;border-radius:50%;background:#cc4499;flex:none}
+.slide .t{font-size:4.9cqw;line-height:1.3;width:100%;flex:1;display:flex;align-items:center;padding-bottom:7cqw}
+.slide .f{position:absolute;left:7cqw;bottom:3.5cqw;font-size:1.9cqw;color:#b9a8f0}
+.slide .n{position:absolute;right:3cqw;bottom:3.5cqw;font-size:1.6cqw;opacity:.5}
+.th4{background:radial-gradient(ellipse 3.5% 6% at 95% 13%,rgba(110,160,255,.95),rgba(110,160,255,0)),radial-gradient(ellipse 3.5% 6% at 6% 96%,rgba(225,120,255,.95),rgba(225,120,255,0)),radial-gradient(ellipse 62% 110% at 100% 0%,rgba(43,68,196,.95),rgba(43,68,196,0)),radial-gradient(ellipse 40% 75% at 0% 100%,rgba(106,44,184,.9),rgba(106,44,184,0)),radial-gradient(ellipse 35% 60% at 100% 100%,rgba(106,40,112,.85),rgba(106,40,112,0)),#060a24}
+.th0{background:linear-gradient(135deg,#3b2a8c,#7a4fd6)}.th1{background:linear-gradient(135deg,#0f4c3a,#2f9e6e)}.th2{background:linear-gradient(135deg,#1c1c1c,#444)}.th3{background:linear-gradient(135deg,#8a3b12,#d98a2b)}
+.bar{display:flex;gap:8px;margin:10px 0;align-items:center;flex-wrap:wrap}
+button,select,input,textarea{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:8px 12px}
+button{cursor:pointer}button.p{background:var(--ac);color:#fff;border-color:var(--ac)}button:disabled{opacity:.5}
+.grow{flex:1}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-top:12px}
+.box h2{font-size:15px;margin:0 0 8px}
+.box input,.box textarea{width:100%}
+details{margin-top:10px}summary{cursor:pointer;font-size:14px}label.ck{display:flex;gap:6px;align-items:center;font-size:14px;margin:8px 0}label.ck input{width:auto}
+.list div{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:14px}
+small{opacity:.7;display:block;margin-top:6px}
+#msg{margin-top:8px;font-size:14px}
+.full{position:fixed;inset:0;z-index:9;border-radius:0;aspect-ratio:auto}
+</style>
+
+</head>
+<body>
+<h1>📖 Versets en diapositives (LSG 1910)</h1>
+<div id="view" class="slide th4"></div>
+<div class="bar">
+<button id="prev">◀</button><button id="next" class="p">▶</button>
+<span id="count" class="grow"></span>
+<select id="theme"><option value="4" selected>Ambassade</option><option value="0">Violet</option><option value="1">Vert</option><option value="2">Sombre</option><option value="3">Ambre</option></select>
+<button id="fs">Plein écran</button>
+</div>
+
+<div class="box"><h2>Quels passages ?</h2>
+<textarea id="refs" rows="3" placeholder="Un passage par ligne ou séparés par « ; »&#10;Ex. Romains 1:16-17 ; Jean 3:16 ; Psaume 23 ; 1 Corinthiens 13:4-7"></textarea>
+<label class="ck"><input type="checkbox" id="group"> Regrouper les versets d'un même passage sur une seule diapositive</label>
+<div class="bar" style="margin:0"><button id="go" class="p">Générer</button></div>
+<div id="msg"></div>
+<small>Texte : Louis Segond 1910 (domaine public), chargé automatiquement depuis la Free Use Bible API. Une connexion Internet est nécessaire.</small>
+<details><summary>Coller un verset manuellement</summary>
+<input id="mref" placeholder="Référence (ex. Romains 1:16)" style="margin:8px 0">
+<textarea id="mtxt" rows="3" placeholder="Texte du verset"></textarea>
+<div class="bar"><button id="madd">Ajouter</button></div></details>
+</div>
+
+<div class="box"><h2>Ma présentation</h2><div class="list" id="list"></div>
+<div class="bar"><button id="dl">Télécharger en .pptx</button><button id="clr">Tout effacer</button></div></div>
+
+<script>
+const API="https://bible.helloao.org/api/fra_lsg/";
+const BOOKS=[
+["GEN","Genèse","genese gen ge gn"],["EXO","Exode","exode ex exo"],["LEV","Lévitique","levitique lev lv"],["NUM","Nombres","nombres nb nom"],["DEU","Deutéronome","deuteronome deut dt"],
+["JOS","Josué","josue jos"],["JDG","Juges","juges jg jug"],["RUT","Ruth","ruth rt"],["1SA","1 Samuel","1samuel 1sam 1s"],["2SA","2 Samuel","2samuel 2sam 2s"],
+["1KI","1 Rois","1rois 1r 1ro"],["2KI","2 Rois","2rois 2r 2ro"],["1CH","1 Chroniques","1chroniques 1chr 1ch"],["2CH","2 Chroniques","2chroniques 2chr 2ch"],
+["EZR","Esdras","esdras esd"],["NEH","Néhémie","nehemie neh"],["EST","Esther","esther est"],["JOB","Job","job"],["PSA","Psaume","psaumes psaume ps"],
+["PRO","Proverbes","proverbes prov pr"],["ECC","Ecclésiaste","ecclesiaste eccl ec"],["SNG","Cantique des cantiques","cantiquedescantiques cantique cant ct"],
+["ISA","Ésaïe","esaie isaie es esa"],["JER","Jérémie","jeremie jer jr"],["LAM","Lamentations","lamentations lam"],["EZK","Ézéchiel","ezechiel ezech ez"],
+["DAN","Daniel","daniel dan dn"],["HOS","Osée","osee os"],["JOL","Joël","joel jl"],["AMO","Amos","amos am"],["OBA","Abdias","abdias abd"],["JON","Jonas","jonas jon"],
+["MIC","Michée","michee mi mic"],["NAM","Nahum","nahum na"],["HAB","Habakuk","habakuk habacuc hab"],["ZEP","Sophonie","sophonie soph so"],["HAG","Aggée","aggee ag"],
+["ZEC","Zacharie","zacharie zach za"],["MAL","Malachie","malachie mal"],["MAT","Matthieu","matthieu matt mat mt"],["MRK","Marc","marc mar mc"],["LUK","Luc","luc lc"],
+["JHN","Jean","jean jea jn"],["ACT","Actes","actes act ac"],["ROM","Romains","romains rom rm ro"],["1CO","1 Corinthiens","1corinthiens 1cor 1co"],["2CO","2 Corinthiens","2corinthiens 2cor 2co"],
+["GAL","Galates","galates gal ga"],["EPH","Éphésiens","ephesiens eph"],["PHP","Philippiens","philippiens phil php pp"],["COL","Colossiens","colossiens col"],
+["1TH","1 Thessaloniciens","1thessaloniciens 1thess 1th"],["2TH","2 Thessaloniciens","2thessaloniciens 2thess 2th"],["1TI","1 Timothée","1timothee 1tim 1ti"],["2TI","2 Timothée","2timothee 2tim 2ti"],
+["TIT","Tite","tite tit"],["PHM","Philémon","philemon phm"],["HEB","Hébreux","hebreux heb he"],["JAS","Jacques","jacques jac jc"],["1PE","1 Pierre","1pierre 1pi 1p"],["2PE","2 Pierre","2pierre 2pi 2p"],
+["1JN","1 Jean","1jean 1jn 1j"],["2JN","2 Jean","2jean 2jn 2j"],["3JN","3 Jean","3jean 3jn 3j"],["JUD","Jude","jude jud"],["REV","Apocalypse","apocalypse apoc ap"]];
+const MAP={};BOOKS.forEach(b=>b[2].split(" ").forEach(a=>MAP[a]=b));
+const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[’']/g,"").replace(/[–—]/g,"-");
+function parseRef(raw){
+ const s=norm(raw).trim();
+ const m=s.match(/^((?:[123]\s*)?[a-z]+(?:\s+des\s+cantiques)?)\.?\s*(\d+)\s*(?:[:.,v]\s*([\d\s,\-]+))?$/);
+ if(!m)return null;
+ const b=MAP[m[1].replace(/[\s.]/g,"")];
+ if(!b)return null;
+ let vs=null;
+ if(m[3]){vs=[];m[3].split(",").forEach(p=>{p=p.trim();if(!p)return;const r=p.split("-").map(x=>parseInt(x,10));if(r.some(isNaN))return;const a=r[0],z=r[1]||r[0];for(let v=a;v<=z&&v-a<200;v++)vs.push(v)});if(!vs.length)return null}
+ return {id:b[0],name:b[1],ch:+m[2],vs,raw:m[3]?m[3].replace(/\s+/g,""):null};
+}
+const cache={};
+async function chapter(id,ch){
+ const k=id+"/"+ch;if(cache[k])return cache[k];
+ const r=await fetch(API+id+"/"+ch+".json");
+ if(!r.ok)throw new Error("HTTP "+r.status);
+ const d=await r.json();
+ const out={};
+ (d.chapter&&d.chapter.content||[]).forEach(it=>{
+  if(it.type!=="verse")return;
+  const t=(it.content||[]).map(c=>typeof c==="string"?c:(c&&typeof c.text==="string"?c.text:"")).join(" ").replace(/\s+/g," ").replace(/\s+([,.;:!?»])/g,"$1").trim();
+  out[it.number]=t;
+ });
+ return cache[k]=out;
+}
+function clean(t){return t.replace(/[,;]$/,".")}
+
+let deck=[],i=0;
+const $=id=>document.getElementById(id),view=$("view");
+function msg(t){$("msg").textContent=t}
+function render(){
+ view.innerHTML="";
+ const s=deck[i];
+ if(!s){const t=document.createElement("div");t.className="t";t.textContent="Saisis un passage pour créer tes diapositives";view.append(t);$("count").textContent="0 / 0";renderList();return}
+ const rb=document.createElement("div");rb.className="rb";
+ const dot=document.createElement("div");dot.className="dot";
+ const rt=document.createElement("span");rt.textContent=s.r;rb.append(dot,rt);
+ const t=document.createElement("div");t.className="t";t.textContent="« "+s.t+" »";
+ const L=s.t.length;t.style.fontSize=(L>420?2.6:L>330?3.2:L>230?3.8:L>140?4.4:4.9)+"cqw";
+ const f=document.createElement("div");f.className="f";f.textContent="Bible Louis Segond (1910)";
+ const n=document.createElement("div");n.className="n";n.textContent=(i+1)+"/"+deck.length;
+ view.append(rb,t,f,n);
+ $("count").textContent=(i+1)+" / "+deck.length;
+ renderList();
+}
+function renderList(){
+ const l=$("list");l.innerHTML="";
+ deck.forEach((s,k)=>{
+  const d=document.createElement("div");
+  const a=document.createElement("span");a.textContent=(k+1)+". "+s.r;a.style.cursor="pointer";a.onclick=()=>{i=k;render()};
+  const b=document.createElement("button");b.textContent="✕";b.onclick=()=>{deck.splice(k,1);i=Math.max(0,Math.min(i,deck.length-1));render()};
+  d.append(a,b);l.append(d);
+ });
+}
+$("go").onclick=async()=>{
+ const items=$("refs").value.split(/[;\n]+/).map(x=>x.trim()).filter(Boolean);
+ if(!items.length)return;
+ $("go").disabled=true;msg("Chargement…");
+ const added=[],errs=[];
+ for(const raw of items){
+  const p=parseRef(raw);
+  if(!p){errs.push("« "+raw+" » : référence non reconnue");continue}
+  try{
+   const ch=await chapter(p.id,p.ch);
+   const nums=p.vs||Object.keys(ch).map(Number).sort((a,b)=>a-b);
+   const got=nums.filter(n=>ch[n]);
+   if(!got.length){errs.push("« "+raw+" » : verset introuvable");continue}
+   const label=p.name+" "+p.ch+(p.raw?":"+p.raw.replace(/-/g,"–").replace(/,/g,", "):"");
+   if($("group").checked){
+    added.push({r:label,t:clean(got.map(n=>ch[n]).join(" "))});
+   }else{
+    got.forEach(n=>added.push({r:p.name+" "+p.ch+":"+n,t:clean(ch[n])}));
+   }
+  }catch(e){errs.push("« "+raw+" » : chargement impossible ("+(e&&e.message||"erreur")+"). Vérifie ta connexion ou utilise le collage manuel.")}
+ }
+ if(added.length){const st=deck.length;deck.push(...added);i=st;render();$("refs").value=""}
+ msg((added.length?added.length+" diapositive(s) ajoutée(s). ":"")+errs.join(" "));
+ $("go").disabled=false;
+};
+$("madd").onclick=()=>{
+ const r=$("mref").value.trim();
+ let t=$("mtxt").value.replace(/\s*\n\s*/g," ").trim().replace(/^[«"“]\s*/,"").replace(/\s*[»"”]$/,"");
+ if(!r||!t)return;
+ deck.push({r,t});i=deck.length-1;render();$("mref").value="";$("mtxt").value="";
+};
+function makeBG(idx,solid){
+ if(idx!==4)return {color:solid};
+ const W=1280,H=720,cv=document.createElement("canvas");cv.width=W;cv.height=H;const x=cv.getContext("2d");
+ x.fillStyle="#060a24";x.fillRect(0,0,W,H);
+ const g=(cx,cy,rx,ry,c)=>{x.save();x.translate(cx*W,cy*H);x.scale(rx*W,ry*H);const r=x.createRadialGradient(0,0,0,0,0,1);r.addColorStop(0,"rgba("+c+")");r.addColorStop(1,"rgba("+c.split(",").slice(0,3).join(",")+",0)");x.fillStyle=r;x.fillRect(-1,-1,2,2);x.restore()};
+ g(1,0,.62,1.1,"43,68,196,.95");g(0,1,.4,.75,"106,44,184,.9");g(1,1,.35,.6,"106,40,112,.85");g(.95,.13,.035,.06,"110,160,255,.95");g(.06,.96,.035,.06,"225,120,255,.95");
+ return {data:cv.toDataURL("image/png").slice(5)};
+}
+$("dl").onclick=async()=>{
+ if(!deck.length){msg("Aucune diapositive à exporter.");return}
+ try{
+  const p=new PptxGenJS();p.layout="LAYOUT_16x9";
+  const cols=["3B2A8C","0F4C3A","1C1C1C","8A3B12"],c=cols[+$("theme").value];
+  const bg=makeBG(+$("theme").value,c);
+  deck.forEach(s=>{
+   const sl=p.addSlide();sl.background=bg;
+   sl.addShape(p.ShapeType.rect,{x:0.5,y:0.45,w:6.7,h:0.8,fill:{color:"1E2878",transparency:40},line:{color:"C0449A",width:2}});
+   sl.addShape(p.ShapeType.ellipse,{x:0.7,y:0.55,w:0.6,h:0.6,fill:{color:"CC4499"},line:{color:"CC4499"}});
+   sl.addText(s.r,{x:1.6,y:0.45,w:5.5,h:0.8,fontFace:"Times New Roman",fontSize:24,bold:true,color:"FFFFFF",valign:"middle"});
+   const L=s.t.length;
+   sl.addText("« "+s.t+" »",{x:0.7,y:1.4,w:8.6,h:3.5,fontFace:"Times New Roman",fontSize:L>420?16:L>330?18:L>230?22:L>140?26:30,color:"FFFFFF",align:"left",valign:"middle",fit:"shrink"});
+   sl.addText("Bible Louis Segond (1910)",{x:0.7,y:5.1,w:5,h:0.35,fontFace:"Times New Roman",fontSize:11,color:"B9A8F0"});
+  });
+  await p.writeFile({fileName:"versets.pptx"});
+  msg("Fichier téléchargé.");
+ }catch(e){msg("Export impossible : "+(e&&e.message||"erreur"))}
+};
+$("clr").onclick=()=>{deck=[];i=0;render()};
+$("prev").onclick=()=>{if(deck.length){i=(i-1+deck.length)%deck.length;render()}};
+$("next").onclick=()=>{if(deck.length){i=(i+1)%deck.length;render()}};
+$("theme").onchange=e=>{view.className="slide th"+e.target.value+(view.classList.contains("full")?" full":"")};
+$("fs").onclick=()=>view.classList.toggle("full");
+view.onclick=()=>{if(view.classList.contains("full"))$("next").click()};
+document.addEventListener("keydown",e=>{
+ if(["INPUT","TEXTAREA","SELECT"].includes(document.activeElement.tagName))return;
+ if(e.key==="ArrowRight")$("next").click();
+ if(e.key==="ArrowLeft")$("prev").click();
+ if(e.key==="Escape")view.classList.remove("full");
+});
+render();
+</script>
+</body>
+</html>
