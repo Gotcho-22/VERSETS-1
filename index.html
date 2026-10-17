@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Versets en diapositives</title>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
-
 <style>
 :root{--bg:#f6f4ef;--fg:#1e1e24;--card:#fff;--bd:#d9d5ca;--ac:#7a4fd6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17171c;--fg:#f0eee8;--card:#23232b;--bd:#3a3a45;--ac:#a58bf0}}
@@ -37,7 +36,7 @@ small{opacity:.7;display:block;margin-top:6px}
 
 </head>
 <body>
-<h1>📖 Versets en diapositives (LSG 1910)</h1>
+<h1>📖 Versets en diapositives</h1>
 <div id="view" class="slide th4"></div>
 <div class="bar">
 <button id="prev">◀</button><button id="next" class="p">▶</button>
@@ -47,13 +46,15 @@ small{opacity:.7;display:block;margin-top:6px}
 </div>
 
 <div class="box"><h2>Quels passages ?</h2>
+<select id="ver" style="width:100%;margin-bottom:8px"><option value="fra_lsg">Louis Segond 1910</option></select>
 <textarea id="refs" rows="3" placeholder="Un passage par ligne ou séparés par « ; »&#10;Ex. Romains 1:16-17 ; Jean 3:16 ; Psaume 23 ; 1 Corinthiens 13:4-7"></textarea>
 <label class="ck"><input type="checkbox" id="group"> Regrouper les versets d'un même passage sur une seule diapositive</label>
 <div class="bar" style="margin:0"><button id="go" class="p">Générer</button></div>
 <div id="msg"></div>
-<small>Texte : Louis Segond 1910 (domaine public), chargé automatiquement depuis la Free Use Bible API. Une connexion Internet est nécessaire.</small>
+<small>Texte chargé automatiquement depuis la Free Use Bible API (versions libres de droits uniquement). Une connexion Internet est nécessaire.</small>
 <details><summary>Coller un verset manuellement</summary>
 <input id="mref" placeholder="Référence (ex. Romains 1:16)" style="margin:8px 0">
+<input id="mver" placeholder="Version (facultatif, ex. Segond 21)" style="margin-bottom:8px">
 <textarea id="mtxt" rows="3" placeholder="Texte du verset"></textarea>
 <div class="bar"><button id="madd">Ajouter</button></div></details>
 </div>
@@ -62,7 +63,23 @@ small{opacity:.7;display:block;margin-top:6px}
 <div class="bar"><button id="dl">Télécharger en .pptx</button><button id="clr">Tout effacer</button></div></div>
 
 <script>
-const API="https://bible.helloao.org/api/fra_lsg/";
+const API="https://bible.helloao.org/api/";
+let TRS=[{id:"fra_lsg",name:"Louis Segond 1910",lang:"fra"}];
+function vname(t){return t.id==="fra_lsg"?"Bible Louis Segond (1910)":t.name}
+async function loadTranslations(){
+ try{
+  const r=await fetch(API+"available_translations.json");
+  if(!r.ok)return;
+  const d=await r.json();
+  const list=(d.translations||[]).filter(t=>t&&t.id&&(t.language==="fra"||t.language==="eng")).map(t=>({id:t.id,name:t.name||t.englishName||t.id,lang:t.language}));
+  if(!list.some(t=>t.id==="fra_lsg"))list.unshift(TRS[0]);
+  list.sort((a,b)=>(a.id==="fra_lsg"?-1:b.id==="fra_lsg"?1:(a.lang===b.lang?a.name.localeCompare(b.name):(a.lang==="fra"?-1:1))));
+  TRS=list;
+  const s=document.getElementById("ver");s.innerHTML="";
+  list.forEach(t=>{const o=document.createElement("option");o.value=t.id;o.textContent=t.name+(t.lang==="eng"?" (anglais)":"");s.append(o)});
+ }catch(e){}
+}
+function curTr(){const id=document.getElementById("ver").value;return TRS.find(t=>t.id===id)||TRS[0]}
 const BOOKS=[
 ["GEN","Genèse","genese gen ge gn"],["EXO","Exode","exode ex exo"],["LEV","Lévitique","levitique lev lv"],["NUM","Nombres","nombres nb nom"],["DEU","Deutéronome","deuteronome deut dt"],
 ["JOS","Josué","josue jos"],["JDG","Juges","juges jg jug"],["RUT","Ruth","ruth rt"],["1SA","1 Samuel","1samuel 1sam 1s"],["2SA","2 Samuel","2samuel 2sam 2s"],
@@ -91,9 +108,9 @@ function parseRef(raw){
  return {id:b[0],name:b[1],ch:+m[2],vs,raw:m[3]?m[3].replace(/\s+/g,""):null};
 }
 const cache={};
-async function chapter(id,ch){
- const k=id+"/"+ch;if(cache[k])return cache[k];
- const r=await fetch(API+id+"/"+ch+".json");
+async function chapter(tid,id,ch){
+ const k=tid+"/"+id+"/"+ch;if(cache[k])return cache[k];
+ const r=await fetch(API+tid+"/"+id+"/"+ch+".json");
  if(!r.ok)throw new Error("HTTP "+r.status);
  const d=await r.json();
  const out={};
@@ -118,7 +135,7 @@ function render(){
  const rt=document.createElement("span");rt.textContent=s.r;rb.append(dot,rt);
  const t=document.createElement("div");t.className="t";t.textContent="« "+s.t+" »";
  const L=s.t.length;t.style.fontSize=(L>420?2.6:L>330?3.2:L>230?3.8:L>140?4.4:4.9)+"cqw";
- const f=document.createElement("div");f.className="f";f.textContent="Bible Louis Segond (1910)";
+ const f=document.createElement("div");f.className="f";f.textContent=s.v||"";
  const n=document.createElement("div");n.className="n";n.textContent=(i+1)+"/"+deck.length;
  view.append(rb,t,f,n);
  $("count").textContent=(i+1)+" / "+deck.length;
@@ -136,21 +153,22 @@ function renderList(){
 $("go").onclick=async()=>{
  const items=$("refs").value.split(/[;\n]+/).map(x=>x.trim()).filter(Boolean);
  if(!items.length)return;
+ const tr=curTr(),vn=vname(tr);
  $("go").disabled=true;msg("Chargement…");
  const added=[],errs=[];
  for(const raw of items){
   const p=parseRef(raw);
   if(!p){errs.push("« "+raw+" » : référence non reconnue");continue}
   try{
-   const ch=await chapter(p.id,p.ch);
+   const ch=await chapter(tr.id,p.id,p.ch);
    const nums=p.vs||Object.keys(ch).map(Number).sort((a,b)=>a-b);
    const got=nums.filter(n=>ch[n]);
    if(!got.length){errs.push("« "+raw+" » : verset introuvable");continue}
    const label=p.name+" "+p.ch+(p.raw?":"+p.raw.replace(/-/g,"–").replace(/,/g,", "):"");
    if($("group").checked){
-    added.push({r:label,t:clean(got.map(n=>ch[n]).join(" "))});
+    added.push({r:label,t:clean(got.map(n=>ch[n]).join(" ")),v:vn});
    }else{
-    got.forEach(n=>added.push({r:p.name+" "+p.ch+":"+n,t:clean(ch[n])}));
+    got.forEach(n=>added.push({r:p.name+" "+p.ch+":"+n,t:clean(ch[n]),v:vn}));
    }
   }catch(e){errs.push("« "+raw+" » : chargement impossible ("+(e&&e.message||"erreur")+"). Vérifie ta connexion ou utilise le collage manuel.")}
  }
@@ -162,7 +180,7 @@ $("madd").onclick=()=>{
  const r=$("mref").value.trim();
  let t=$("mtxt").value.replace(/\s*\n\s*/g," ").trim().replace(/^[«"“]\s*/,"").replace(/\s*[»"”]$/,"");
  if(!r||!t)return;
- deck.push({r,t});i=deck.length-1;render();$("mref").value="";$("mtxt").value="";
+ deck.push({r,t,v:$("mver").value.trim()});i=deck.length-1;render();$("mref").value="";$("mtxt").value="";
 };
 function makeBG(idx,solid){
  if(idx!==4)return {color:solid};
@@ -185,7 +203,7 @@ $("dl").onclick=async()=>{
    sl.addText(s.r,{x:1.6,y:0.45,w:5.5,h:0.8,fontFace:"Times New Roman",fontSize:24,bold:true,color:"FFFFFF",valign:"middle"});
    const L=s.t.length;
    sl.addText("« "+s.t+" »",{x:0.7,y:1.4,w:8.6,h:3.5,fontFace:"Times New Roman",fontSize:L>420?16:L>330?18:L>230?22:L>140?26:30,color:"FFFFFF",align:"left",valign:"middle",fit:"shrink"});
-   sl.addText("Bible Louis Segond (1910)",{x:0.7,y:5.1,w:5,h:0.35,fontFace:"Times New Roman",fontSize:11,color:"B9A8F0"});
+   if(s.v)sl.addText(s.v,{x:0.7,y:5.1,w:6,h:0.35,fontFace:"Times New Roman",fontSize:11,color:"B9A8F0"});
   });
   await p.writeFile({fileName:"versets.pptx"});
   msg("Fichier téléchargé.");
@@ -204,6 +222,7 @@ document.addEventListener("keydown",e=>{
  if(e.key==="Escape")view.classList.remove("full");
 });
 render();
+loadTranslations();
 </script>
 </body>
 </html>
